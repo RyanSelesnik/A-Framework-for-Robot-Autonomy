@@ -44,6 +44,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-noetic-rviz \
     ros-noetic-ddynamic-reconfigure \
     ros-noetic-mavros \
+    ros-noetic-roslint \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Python deps (CPU-only PyTorch 2.4.1 — last version for Python 3.8) ──────
