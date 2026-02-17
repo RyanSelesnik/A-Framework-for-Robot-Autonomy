@@ -20,6 +20,11 @@ RUN apt-get update && apt-get install -y \
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
+# ── VNC for browser-based RViz ───────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    xvfb x11vnc novnc \
+    && rm -rf /var/lib/apt/lists/*
+
 # ── C++ libs for A-Framework compilation ─────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libopenblas-dev libeigen3-dev libarmadillo-dev \

@@ -17,4 +17,11 @@ if [ -d /afw_src ]; then
     ln -sf /opt/ros/noetic/share/catkin/cmake/toplevel.cmake /catkin_ws/src/CMakeLists.txt
 fi
 
+# Start virtual display + VNC for browser-based RViz
+export DISPLAY=:99
+Xvfb :99 -screen 0 1920x1080x24 &
+sleep 1
+x11vnc -display :99 -forever -nopw -shared -rfbport 5900 &
+/usr/share/novnc/utils/launch.sh --vnc localhost:5900 --listen 6080 &
+
 exec "$@"
