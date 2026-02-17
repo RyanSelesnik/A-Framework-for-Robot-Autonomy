@@ -2,7 +2,11 @@ FROM ros:noetic-ros-base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# ── Dev tools (mirroring golden base, adapted for Ubuntu 20.04) ──────────────
+# ══════════════════════════════════════════════════════════════════════════════
+# SLOW / STABLE layers (rarely change, cached)
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── System packages (dev tools + build deps) ─────────────────────────────────
 RUN apt-get update && apt-get install -y \
     locales git curl wget unzip zip \
     build-essential cmake pkg-config \
@@ -12,6 +16,12 @@ RUN apt-get update && apt-get install -y \
     nodejs npm \
     jq less man-db sudo ca-certificates gnupg \
     software-properties-common \
+    # C++ libs for A-Framework
+    libopenblas-dev libeigen3-dev libarmadillo-dev \
+    libgflags-dev libgoogle-glog-dev libgtest-dev \
+    liblapack-dev libsuitesparse-dev libcxsparse3 \
+    # VNC for browser-based RViz
+    xvfb x11vnc novnc \
     && locale-gen en_US.UTF-8 \
     && add-apt-repository -y ppa:neovim-ppa/unstable \
     && apt-get update && apt-get install -y neovim \
@@ -20,20 +30,7 @@ RUN apt-get update && apt-get install -y \
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
-# ── VNC for browser-based RViz ───────────────────────────────────────────────
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    xvfb x11vnc novnc \
-    && rm -rf /var/lib/apt/lists/*
-
-# ── C++ libs for A-Framework compilation ─────────────────────────────────────
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libopenblas-dev libeigen3-dev libarmadillo-dev \
-    # Ceres Solver deps (required by VINS-Fusion)
-    libgflags-dev libgoogle-glog-dev libgtest-dev \
-    liblapack-dev libsuitesparse-dev libcxsparse3 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Ceres Solver (required by VINS-Fusion in A-Framework)
+# ── Ceres Solver (required by VINS-Fusion) ───────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends libceres-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -52,11 +49,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-noetic-roslint \
     && rm -rf /var/lib/apt/lists/*
 
-# ── Python deps (CPU-only PyTorch 2.4.1 — last version for Python 3.8) ──────
+# ── Python deps (CPU-only PyTorch — slowest layer) ──────────────────────────
 COPY src/consdred_smpc_ros/requirements.txt /tmp/
 RUN pip3 install --no-cache-dir 'typing-extensions<4.13' \
     && pip3 install --no-cache-dir torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu \
     && grep -v '^torch' /tmp/requirements.txt | pip3 install --no-cache-dir -r /dev/stdin
+
+# ══════════════════════════════════════════════════════════════════════════════
+# FAST / CHANGING layers (user config, entrypoint — quick to rebuild)
+# ══════════════════════════════════════════════════════════════════════════════
 
 # ── User setup ───────────────────────────────────────────────────────────────
 RUN useradd -m -s /bin/zsh -G sudo -u 1005 ryan && \
@@ -85,7 +86,7 @@ USER ryan
 RUN echo "source /opt/ros/noetic/setup.zsh" >> ~/.zshrc \
     && echo '[ -f /catkin_ws/devel/setup.zsh ] && source /catkin_ws/devel/setup.zsh' >> ~/.zshrc
 
-# ── Entrypoint ───────────────────────────────────────────────────────────────
+# ── Entrypoint (changes here only rebuild this layer) ────────────────────────
 COPY --chown=ryan:ryan entrypoint.sh /entrypoint.sh
 USER root
 RUN chmod +x /entrypoint.sh
