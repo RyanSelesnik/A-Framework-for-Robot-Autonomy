@@ -17,6 +17,14 @@ if [ -d /afw_src ]; then
     ln -sf /opt/ros/noetic/share/catkin/cmake/toplevel.cmake /catkin_ws/src/CMakeLists.txt
 fi
 
+# Auto-build workspace on first run
+if [ ! -f /catkin_ws/devel/setup.bash ]; then
+    echo "First run: building catkin workspace..."
+    source /opt/ros/noetic/setup.bash
+    cd /catkin_ws && catkin_make -DCATKIN_WHITELIST_PACKAGES=''
+    echo "Build complete."
+fi
+
 # Start virtual display + VNC for browser-based RViz
 export DISPLAY=:99
 Xvfb :99 -screen 0 1920x1080x24 &
