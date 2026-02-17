@@ -5,18 +5,18 @@
 case "$1" in
   build)
     echo "Building Docker image..."
-    docker-compose build
+    docker compose build
     ;;
 
   run)
     echo "Starting container..."
-    docker-compose up -d
+    docker compose up -d
     docker exec -it consdred_smpc zsh
     ;;
 
   stop)
     echo "Stopping container..."
-    docker-compose down
+    docker compose down
     ;;
 
   build-code)
