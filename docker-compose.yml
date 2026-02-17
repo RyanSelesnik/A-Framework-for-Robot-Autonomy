@@ -1,0 +1,21 @@
+services:
+  consdred-smpc:
+    build: .
+    container_name: consdred_smpc
+    ports:
+      - "6080:6080"   # noVNC (for later)
+      - "5900:5900"   # VNC (for later)
+    environment:
+      - ROS_MASTER_URI=http://localhost:11311
+      - DISPLAY=${DISPLAY:-}
+    volumes:
+      # A-Framework/src (read-only, entrypoint symlinks into workspace)
+      - ./src:/afw_src:ro
+      # ConsDRED live-editable (overrides the ro mount for this package)
+      - ./src/consdred_smpc_ros:/catkin_ws/src/consdred_smpc_ros
+      # X11 for SSH forwarding (when needed)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    working_dir: /catkin_ws
+    stdin_open: true
+    tty: true
+    command: /bin/zsh
