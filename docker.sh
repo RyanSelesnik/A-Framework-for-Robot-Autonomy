@@ -37,7 +37,7 @@ case "$1" in
 
   sim)
     echo "Launching closed-loop simulation..."
-    docker exec -it consdred_smpc zsh -c "source /catkin_ws/devel/setup.zsh && roslaunch consdred_smpc_ros consdred_smpc_closedloop.launch"
+    docker exec -it -e DISPLAY=:99 consdred_smpc zsh -c "source /catkin_ws/devel/setup.zsh && roslaunch consdred_smpc_ros consdred_smpc_closedloop.launch"
     ;;
 
   mock)
