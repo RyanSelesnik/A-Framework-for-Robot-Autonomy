@@ -35,6 +35,16 @@ case "$1" in
     echo "Open http://localhost:6080/vnc.html in your browser"
     ;;
 
+  planner)
+    echo "Launching EGO-Planner + simulator..."
+    docker exec -it consdred_smpc zsh -c "source /catkin_ws/devel/setup.zsh && roslaunch ego_planner single_run_in_sim.launch"
+    ;;
+
+  consdred)
+    echo "Launching ConsDRED-SMPC controller..."
+    docker exec -it consdred_smpc zsh -c "source /catkin_ws/devel/setup.zsh && roslaunch consdred_smpc_ros consdred_smpc_framework.launch --wait"
+    ;;
+
   sim)
     echo "Launching closed-loop simulation..."
     docker exec -it -e DISPLAY=:99 consdred_smpc zsh -c "source /catkin_ws/devel/setup.zsh && roslaunch consdred_smpc_ros consdred_smpc_closedloop.launch"
@@ -51,14 +61,16 @@ case "$1" in
     ;;
 
   *)
-    echo "Usage: $0 {build|run|stop|build-code|sim|launch|mock|vnc|shell}"
+    echo "Usage: $0 {build|run|stop|build-code|planner|consdred|sim|launch|mock|vnc|shell}"
     echo ""
     echo "Commands:"
     echo "  build       - Build the Docker image"
     echo "  run         - Start container and open shell"
     echo "  stop        - Stop the container"
     echo "  build-code  - Build the full ROS workspace"
-    echo "  sim         - Launch closed-loop simulation (A-Framework)"
+    echo "  planner     - Launch EGO-Planner + simulator"
+    echo "  consdred    - Launch ConsDRED-SMPC controller"
+    echo "  sim         - Launch closed-loop simulation (all-in-one)"
     echo "  launch      - Launch the main node (needs odom)"
     echo "  mock        - Launch with fake odometry for testing"
     echo "  vnc         - Start VNC server for browser RViz"
